@@ -19,6 +19,7 @@ import static com.googlecode.mindbell.MindBellPreferences.TAG;
 
 import java.io.IOException;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -44,7 +45,8 @@ import com.googlecode.mindbell.util.Utils;
  * @author marc
  * 
  */
-public class AndroidContextAccessor extends ContextAccessor {
+@SuppressLint("NewApi")
+public class AndroidContextAccessor extends ContextAccessor implements AudioManager.OnAudioFocusChangeListener {
     public static final int KEYMUTEOFFHOOK = R.string.keyMuteOffHook;
     public static final int KEYMUTEWITHPHONE = R.string.keyMuteWithPhone;
 
@@ -139,6 +141,10 @@ public class AndroidContextAccessor extends ContextAccessor {
         return prefs.isSettingVibrate();
     }
 
+    public void onAudioFocusChange(int focusChange) {
+        // Ignore audiofocus changes, we’ll be gone real soon.
+    }
+
     private void removeStatusNotification() {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(uniqueNotificationID);
@@ -161,44 +167,53 @@ public class AndroidContextAccessor extends ContextAccessor {
     @Override
     public void startBellSound(final Runnable runWhenDone) {
         // MindBell.logDebug("Starting bell sound");
-
-        setAlarmVolume(getAlarmMaxVolume());
-        float bellVolume = getBellVolume();
-        MindBell.logDebug("Ringing bell with volume " + bellVolume);
-        Uri bellUri = Utils.getResourceUri(context, R.raw.bell10s);
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-        mediaPlayer.setVolume(bellVolume, bellVolume);
-        try {
-            mediaPlayer.setDataSource(context, bellUri);
-            mediaPlayer.prepare();
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                public void onCompletion(MediaPlayer mp) {
-                    // MindBell.logDebug("Upon completion, originalVolume is " + originalVolume);
-                    finishBellSound();
-                    if (runWhenDone != null) {
-                        runWhenDone.run();
-                    }
+        AudioManager audioMan = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= 8) {
+            int result = audioMan.requestAudioFocus(this, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
+                vibrate(); // Not allowed to ring the bell, at least vibrate.
+                if (runWhenDone != null) {
+                    runWhenDone.run();
                 }
-            });
-
-            mediaPlayer.start();
-
-            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-            if (isSettingVibrate()) {
-                long[] pattern = new long[] { 100, 200, 100, 600 };
-                vibrator.vibrate(pattern, -1);
-            } else {
-                vibrator.vibrate(20);
-            }
-
-        } catch (IOException ioe) {
-            Log.e(TAG, "Cannot set up bell sound", ioe);
-            if (runWhenDone != null) {
-                runWhenDone.run();
+                return;
             }
         }
+        try {
+            setAlarmVolume(getAlarmMaxVolume());
+            float bellVolume = getBellVolume();
+            MindBell.logDebug("Ringing bell with volume " + bellVolume);
+            Uri bellUri = Utils.getResourceUri(context, R.raw.bell10s);
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            mediaPlayer.setVolume(bellVolume, bellVolume);
+            try {
+                mediaPlayer.setDataSource(context, bellUri);
+                mediaPlayer.prepare();
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    public void onCompletion(MediaPlayer mp) {
+                        // MindBell.logDebug("Upon completion, originalVolume is " + originalVolume);
+                        finishBellSound();
+                        if (runWhenDone != null) {
+                            runWhenDone.run();
+                        }
+                    }
+                });
 
+                mediaPlayer.start();
+
+                vibrate();
+
+            } catch (IOException ioe) {
+                Log.e(TAG, "Cannot set up bell sound", ioe);
+                if (runWhenDone != null) {
+                    runWhenDone.run();
+                }
+            }
+        } finally {
+            if (android.os.Build.VERSION.SDK_INT >= 8) {
+                audioMan.abandonAudioFocus(this);
+            }
+        }
     }
 
     public void updateBellSchedule() {
@@ -239,4 +254,13 @@ public class AndroidContextAccessor extends ContextAccessor {
         notificationManager.notify(uniqueNotificationID, notif);
     }
 
+    private void vibrate() {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (isSettingVibrate()) {
+            long[] pattern = new long[] { 100, 200, 100, 600 };
+            vibrator.vibrate(pattern, -1);
+        } else {
+            vibrator.vibrate(20);
+        }
+    }
 }
