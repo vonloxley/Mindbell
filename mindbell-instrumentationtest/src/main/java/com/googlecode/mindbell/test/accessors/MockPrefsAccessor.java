@@ -21,6 +21,8 @@ public class MockPrefsAccessor extends PrefsAccessor {
 
     private boolean bellActive = true;
 
+    private boolean Sunday = false;
+
     @Override
     public boolean doShowBell() {
         return showBell;
@@ -64,6 +66,11 @@ public class MockPrefsAccessor extends PrefsAccessor {
     @Override
     public boolean isBellActive() {
         return bellActive;
+    }
+
+    @Override
+    public boolean isSunday() {
+        return Sunday;
     }
 
     /**
@@ -128,6 +135,14 @@ public class MockPrefsAccessor extends PrefsAccessor {
      */
     public void setStatusNotification(boolean theStatusNotification) {
         this.statusNotification = theStatusNotification;
+    }
+
+    /**
+     * @param theSunday
+     *            the Sunday to set
+     */
+    public void setSunday(boolean theSunday) {
+        this.Sunday = theSunday;
     }
 
 }

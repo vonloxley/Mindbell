@@ -16,6 +16,9 @@
 package com.googlecode.mindbell.accessors;
 
 import static com.googlecode.mindbell.MindBellPreferences.TAG;
+
+import java.util.Calendar;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -39,6 +42,7 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
     private final String keyStatus;
     private final String keyMuteOffHook;
     private final String keyMuteWithPhone;
+    private final String keyMuteSundays;
     private final String keyVibrate;
 
     private final String keyFrequency;
@@ -52,6 +56,7 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
     private final boolean defaultStatus = true;
     private final boolean defaultMuteOffHook = true;
     private final boolean defaultMuteWithPhone = true;
+    private final boolean defaultMuteSundays = true;
     private final boolean defaultVibrate = false;
 
     private final String defaultFrequency = "3600000";
@@ -74,6 +79,7 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
         keyStatus = context.getString(R.string.keyStatus);
         keyMuteOffHook = context.getString(R.string.keyMuteOffHook);
         keyMuteWithPhone = context.getString(R.string.keyMuteWithPhone);
+        keyMuteSundays = context.getString(R.string.keyMuteSundays);
         keyVibrate = context.getString(R.string.keyVibrate);
 
         keyFrequency = context.getString(R.string.keyFrequency);
@@ -90,7 +96,8 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
      */
     private void checkSettings() {
         // boolean settings:
-        String[] booleanSettings = new String[] { keyShow, keyStatus, keyActive, keyMuteOffHook, keyMuteWithPhone, keyVibrate };
+        String[] booleanSettings = new String[] { keyShow, keyStatus, keyActive, keyMuteOffHook, keyMuteWithPhone, keyVibrate,
+                keyMuteSundays };
         for (String s : booleanSettings) {
             try {
                 settings.getBoolean(s, false);
@@ -154,6 +161,10 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
         if (!settings.contains(keyMuteWithPhone)) {
             settings.edit().putBoolean(keyMuteWithPhone, defaultMuteWithPhone).commit();
             Log.w(TAG, "Reset missing setting for '" + keyMuteWithPhone + "' to '" + defaultMuteWithPhone + "'");
+        }
+        if (!settings.contains(keyMuteSundays)) {
+            settings.edit().putBoolean(keyMuteSundays, defaultMuteSundays).commit();
+            Log.w(TAG, "Reset missing setting for '" + keyMuteSundays + "' to '" + defaultMuteSundays + "'");
         }
         if (!settings.contains(keyVibrate)) {
             settings.edit().putBoolean(keyVibrate, defaultVibrate).commit();
@@ -273,6 +284,12 @@ public class AndroidPrefsAccessor extends PrefsAccessor {
     @Override
     public boolean isSettingVibrate() {
         return settings.getBoolean(keyVibrate, defaultVibrate);
+    }
+
+    @Override
+    public boolean isSunday() {
+        Calendar c = Calendar.getInstance();
+        return (c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY && settings.getBoolean(keyMuteSundays, defaultMuteSundays));
     }
 
 }

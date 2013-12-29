@@ -73,6 +73,11 @@ public class Scheduler extends BroadcastReceiver {
             return;
         }
 
+        if (prefs.isSunday()) {
+            Log.d(TAG, "not ringing, it is sunday");
+            return;
+        }
+
         if (prefs.doShowBell()) {
             Log.d(TAG, "audio-visual ring");
 

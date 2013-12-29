@@ -65,6 +65,10 @@
     <string name="prefsEnd">Stop bell every day at...</string>
     <string name="prefsCategoryTry">Try it now</string>
     <string name="prefsRingBell">Ring Bell</string>
+    <string name="prefsMuteSundays">Mute on Sundays</string>
+    <string name="summaryMuteSundays">Bell will not on Sundays</string>
+    <string name="summaryNotMuteSundays">Bell ring on Sundays</string>
+
 
     <!-- Status bar notification -->
     <string name="statusTitleBellActive">Mindfulness Bell is active</string>
@@ -90,5 +94,6 @@
     <string name="keyStart">start</string>
     <string name="keyEnd">end</string>
     <string name="keyTry">try</string>
+    <string name="keyMuteSundays">muteSundays</string>
 
 </resources>

@@ -40,7 +40,7 @@
 	    android:summaryOff="@string/summaryNoStatus"
 	    android:summaryOn="@string/summaryStatus"
 	    android:defaultValue="true"/>
-	</PreferenceCategory>
+    </PreferenceCategory>
 
 	<PreferenceCategory android:title="@string/prefsCategorySound">
 <!-- 
@@ -70,7 +70,13 @@
             android:summaryOff="@string/summaryNotMuted"
             android:summaryOn="@string/summaryMuted" 
 			android:defaultValue="true"/>
-	</PreferenceCategory>
+        <CheckBoxPreference
+            android:key="@string/keyMuteSundays"
+            android:title="@string/prefsMuteSundays"
+            android:summaryOff="@string/summaryNotMuteSundays"
+            android:summaryOn="@string/summaryMuteSundays"
+            android:defaultValue="true" />
+    </PreferenceCategory>
 
     <PreferenceCategory
             android:title="@string/prefsCategoryDetails">

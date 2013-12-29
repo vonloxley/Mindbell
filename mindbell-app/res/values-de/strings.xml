@@ -59,6 +59,9 @@
     <string name="prefsEnd">Beende Glocke täglich um...</string>
     <string name="prefsCategoryTry">Testen:</string>
     <string name="prefsRingBell">Glocke schlagen</string>
+    <string name="prefsMuteSundays">Sonntags stummschalten</string>
+    <string name="summaryMuteSundays">Glocke schlägt nicht am Sonntag</string>
+    <string name="summaryNotMuteSundays">Glocke schlägt auch am Sonntag</string>
 
     <!-- Status bar notification -->
     <string name="statusTitleBellActive">Glocke der Achtsamkeit ist aktiv</string>
