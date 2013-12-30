@@ -60,9 +60,9 @@
     <string name="summaryNotMuted">Bell will also ring during phone calls</string>
     <string name="summaryMuted">Bell will not ring during phone calls</string>
     <string name="prefsCategoryDetails">Details</string>
-    <string name="prefsFrequency">Ring bell about every...</string>
-    <string name="prefsStart">Start bell every day at...</string>
-    <string name="prefsEnd">Stop bell every day at...</string>
+    <string name="prefsFrequency">Ring bell about every…</string>
+    <string name="prefsStart">Start bell every day at…</string>
+    <string name="prefsEnd">Stop bell every day at…</string>
     <string name="prefsCategoryTry">Try it now</string>
     <string name="prefsRingBell">Ring Bell</string>
     <string name="prefsMuteSundays">Mute on Sundays</string>

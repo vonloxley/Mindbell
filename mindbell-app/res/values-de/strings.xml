@@ -54,9 +54,9 @@
     <string name="summaryNotMuted">Glocke läutet auch während Telefongesprächen</string>
     <string name="summaryMuted">Glocke läutet nicht während Telefongesprächen</string>
     <string name="prefsCategoryDetails">Details</string>
-    <string name="prefsFrequency">Schlage die Glocke etwa alle...</string>
-    <string name="prefsStart">Starte Glocke täglich um...</string>
-    <string name="prefsEnd">Beende Glocke täglich um...</string>
+    <string name="prefsFrequency">Schlage die Glocke etwa alle…</string>
+    <string name="prefsStart">Starte Glocke täglich um…</string>
+    <string name="prefsEnd">Beende Glocke täglich um…</string>
     <string name="prefsCategoryTry">Testen:</string>
     <string name="prefsRingBell">Glocke schlagen</string>
     <string name="prefsMuteSundays">Sonntags stummschalten</string>
