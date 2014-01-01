@@ -59,6 +59,7 @@ public class AndroidContextAccessor extends ContextAccessor implements AudioMana
     private final Context context;
 
     private MediaPlayer mediaPlayer = null;
+    private AudioManager audioMan = null;
 
     private PrefsAccessor prefs = null;
 
@@ -73,6 +74,10 @@ public class AndroidContextAccessor extends ContextAccessor implements AudioMana
             MindBell.logDebug("Stopped ongoing player.");
         }
         mediaPlayer.release();
+        if (android.os.Build.VERSION.SDK_INT >= 8 && audioMan != null) {
+            audioMan.abandonAudioFocus(this);
+            audioMan = null;
+        }
         mediaPlayer = null;
     }
 
@@ -142,7 +147,15 @@ public class AndroidContextAccessor extends ContextAccessor implements AudioMana
     }
 
     public void onAudioFocusChange(int focusChange) {
-        // Ignore audiofocus changes, we’ll be gone real soon.
+        switch (focusChange) {
+        case AudioManager.AUDIOFOCUS_LOSS:
+        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+        case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+            finishBellSound();
+            break;
+        default:
+            break;
+        }
     }
 
     private void removeStatusNotification() {
@@ -167,7 +180,7 @@ public class AndroidContextAccessor extends ContextAccessor implements AudioMana
     @Override
     public void startBellSound(final Runnable runWhenDone) {
         // MindBell.logDebug("Starting bell sound");
-        AudioManager audioMan = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        audioMan = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= 8) {
             int result = audioMan.requestAudioFocus(this, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
             if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
@@ -178,40 +191,34 @@ public class AndroidContextAccessor extends ContextAccessor implements AudioMana
                 return;
             }
         }
+        setAlarmVolume(getAlarmMaxVolume());
+        float bellVolume = getBellVolume();
+        MindBell.logDebug("Ringing bell with volume " + bellVolume);
+        Uri bellUri = Utils.getResourceUri(context, R.raw.bell10s);
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+        mediaPlayer.setVolume(bellVolume, bellVolume);
         try {
-            setAlarmVolume(getAlarmMaxVolume());
-            float bellVolume = getBellVolume();
-            MindBell.logDebug("Ringing bell with volume " + bellVolume);
-            Uri bellUri = Utils.getResourceUri(context, R.raw.bell10s);
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-            mediaPlayer.setVolume(bellVolume, bellVolume);
-            try {
-                mediaPlayer.setDataSource(context, bellUri);
-                mediaPlayer.prepare();
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    public void onCompletion(MediaPlayer mp) {
-                        // MindBell.logDebug("Upon completion, originalVolume is " + originalVolume);
-                        finishBellSound();
-                        if (runWhenDone != null) {
-                            runWhenDone.run();
-                        }
+            mediaPlayer.setDataSource(context, bellUri);
+            mediaPlayer.prepare();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                public void onCompletion(MediaPlayer mp) {
+                    // MindBell.logDebug("Upon completion, originalVolume is " + originalVolume);
+                    finishBellSound();
+                    if (runWhenDone != null) {
+                        runWhenDone.run();
                     }
-                });
-
-                mediaPlayer.start();
-
-                vibrate();
-
-            } catch (IOException ioe) {
-                Log.e(TAG, "Cannot set up bell sound", ioe);
-                if (runWhenDone != null) {
-                    runWhenDone.run();
                 }
-            }
-        } finally {
-            if (android.os.Build.VERSION.SDK_INT >= 8) {
-                audioMan.abandonAudioFocus(this);
+            });
+
+            mediaPlayer.start();
+
+            vibrate();
+
+        } catch (IOException ioe) {
+            Log.e(TAG, "Cannot set up bell sound", ioe);
+            if (runWhenDone != null) {
+                runWhenDone.run();
             }
         }
     }
